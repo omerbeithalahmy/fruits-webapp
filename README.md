@@ -5,6 +5,8 @@ A comprehensive infrastructure-as-code (IaC) and containerized application proje
 
 ## 🏗️ Architecture Overview
 
+![Architecture Diagram](docs/architecture.jpg)
+
 The system architecture is designed with modern DevOps principles, utilizing containerization and dynamic cloud infrastructure provisioning:
 
 - **Application Layer**: A lightweight Express.js Node application.
