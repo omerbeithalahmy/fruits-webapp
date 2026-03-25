@@ -117,7 +117,7 @@ resource "aws_launch_template" "app_lt" {
       systemctl start docker
       systemctl enable docker
       
-      git clone -b feature/webapp-provisioning ${var.github_repo_url} /home/ubuntu/app
+      git clone -b feat/webapp-provisioning ${var.github_repo_url} /home/ubuntu/app
       cd /home/ubuntu/app
       
       docker-compose up --build -d
