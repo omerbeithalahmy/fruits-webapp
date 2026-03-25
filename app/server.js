@@ -7,6 +7,10 @@ const port = 3000;
 const mongoUrl = 'mongodb://db:27017';
 const dbName = 'appdb';
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('/', async (req, res) => {
   let client;
   try {
