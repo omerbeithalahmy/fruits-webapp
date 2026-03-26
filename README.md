@@ -55,20 +55,18 @@ The infrastructure can be fully deployed to AWS using the provided Terraform con
 
 ### Deployment Steps
 
+We have provided automation scripts to make cloud provisioning completely seamless.
+
 1. **Initialize the Backend**:
    First, provision the S3 bucket and DynamoDB table required for remote state locking.
    ```bash
-   cd terraform/backend
-   terraform init
-   terraform apply -auto-approve
+   ./scripts/deploy_backend.sh
    ```
 
 2. **Deploy the Infrastructure**:
-   Navigate back to the main terraform directory to provision the VPC components, Security Groups, ALB, and the ASG.
+   This script will automatically detect your AWS Account ID, connect to the secure backend, and deploy the VPC, Security Groups, ALB, and Auto Scaling Group.
    ```bash
-   cd ../
-   terraform init
-   terraform apply -auto-approve
+   ./scripts/deploy_infra.sh
    ```
 
 3. **Access the Application**:
