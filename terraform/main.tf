@@ -120,7 +120,10 @@ resource "aws_launch_template" "app_lt" {
       git clone -b feat/webapp-provisioning ${var.github_repo_url} /home/ubuntu/app
       cd /home/ubuntu/app
       
-      docker-compose up --build -d
+      export TAG=$(git rev-parse --short HEAD)
+      
+      docker-compose pull
+      docker-compose up -d
     EOF
     )
 

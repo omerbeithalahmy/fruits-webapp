@@ -2,6 +2,7 @@ services:
 
   db:
     build: ./db
+    image: ${DOCKER_USERNAME:-omerbeithalahmy}/fruits-webapp-db:${TAG:-latest}
     container_name: mongo-db
     ports:
     - "27017:27017"
@@ -17,6 +18,7 @@ services:
   
   app:
     build: ./app
+    image: ${DOCKER_USERNAME:-omerbeithalahmy}/fruits-webapp-app:${TAG:-latest}
     container_name: node-app
     ports:
     - "3000:3000"
