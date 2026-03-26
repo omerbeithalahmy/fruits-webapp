@@ -6,11 +6,11 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
 BUCKET_NAME="fruits-webapp-terraform-state-${ACCOUNT_ID}"
 
 echo "Deploying Main Infrastructure Configuration"
-echo "  Backend S3 Bucket: $BUCKET_NAME"
+echo "Backend S3 Bucket: $BUCKET_NAME"
 
 cd terraform
 
-terraform init -backend-config="bucket=${BUCKET_NAME}"
+terraform init -reconfigure -backend-config="bucket=${BUCKET_NAME}"
 
 terraform apply -auto-approve
 

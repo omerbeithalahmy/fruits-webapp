@@ -2,10 +2,25 @@ data "aws_vpc" "default" {
     default = true
 }
 
+# Query which Availability Zones support the chosen instance type
+data "aws_ec2_instance_type_offerings" "available" {
+  filter {
+    name   = "instance-type"
+    values = [var.instance_type]
+  }
+  location_type = "availability-zone"
+}
+
 data "aws_subnets" "default" {
     filter {
-      name = "vpc-id"
+      name   = "vpc-id"
       values = [data.aws_vpc.default.id]
+    }
+    
+    # Only include subnets from Availability Zones that actually support our instance type
+    filter {
+      name   = "availability-zone"
+      values = data.aws_ec2_instance_type_offerings.available.locations
     }
 }
 
