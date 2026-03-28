@@ -13,8 +13,9 @@ The system architecture is designed with modern DevOps principles, utilizing con
 - **Database Layer**: MongoDB, pre-seeded with fruit data on initialization.
 - **Containerization**: Both the Application and Database run in isolated Docker containers, orchestrated via Docker Compose on a custom bridge network.
 - **Infrastructure (AWS)**: 
-  - **Auto Scaling Group (ASG)**: Ensures the application remains highly available via an EC2 instance.
-  - **Application Load Balancer (ALB)**: Routes incoming HTTP traffic to the Node.js container.
+  - **VPC & Networking**: A custom VPC with public subnets for the load balancer and private subnets for the application instances. A NAT Gateway provides secure outbound internet access for the private instances.
+  - **Auto Scaling Group (ASG)**: Ensures high availability by maintaining 2 EC2 instances spread across 2 Availability Zones.
+  - **Application Load Balancer (ALB)**: Situated in the public subnets to route incoming HTTP traffic to the instances in the private subnets.
   - **Terraform State Management**: Remote state stored securely in an Amazon S3 bucket, with state locking managed by an Amazon DynamoDB table.
 - **CI/CD**: GitHub Actions pipeline defined to automatically lint and build Docker images on every push or pull request to main/feature branches.
 

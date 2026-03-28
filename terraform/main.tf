@@ -1,33 +1,27 @@
-data "aws_vpc" "default" {
-    default = true
-}
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+  version = "5.0.0"
 
-# Query which Availability Zones support the chosen instance type
-data "aws_ec2_instance_type_offerings" "available" {
-  filter {
-    name   = "instance-type"
-    values = [var.instance_type]
+  name = "${var.project_name}-vpc"
+  cidr = var.vpc_cidr
+
+  azs             = var.availability_zones
+  private_subnets = [cidrsubnet(var.vpc_cidr, 8, 1), cidrsubnet(var.vpc_cidr, 8, 2)]
+  public_subnets  = [cidrsubnet(var.vpc_cidr, 8, 101), cidrsubnet(var.vpc_cidr, 8, 102)]
+
+  enable_nat_gateway = true
+  single_nat_gateway = true 
+
+  tags = {
+    Terraform = "true"
+    Environment = "dev"
   }
-  location_type = "availability-zone"
-}
-
-data "aws_subnets" "default" {
-    filter {
-      name   = "vpc-id"
-      values = [data.aws_vpc.default.id]
-    }
-    
-    # Only include subnets from Availability Zones that actually support our instance type
-    filter {
-      name   = "availability-zone"
-      values = data.aws_ec2_instance_type_offerings.available.locations
-    }
 }
 
 resource "aws_security_group" "alb_sg" {
     name = "${var.project_name}-alb-sg"
-    description = "Allow HTTP inbount traffic to ALB"
-    vpc_id = data.aws_vpc.default.id
+    description = "Allow HTTP inbound traffic to ALB"
+    vpc_id = module.vpc.vpc_id
 
     ingress {
         from_port = 80
@@ -46,8 +40,8 @@ resource "aws_security_group" "alb_sg" {
 
 resource "aws_security_group" "ec2_sg" {
     name = "${var.project_name}-ec2-sg"
-    description = "Allow inbount traffic from ALB only"
-    vpc_id = data.aws_vpc.default.id
+    description = "Allow inbound traffic from ALB only"
+    vpc_id = module.vpc.vpc_id
 
     ingress {
         from_port = 3000
@@ -60,7 +54,7 @@ resource "aws_security_group" "ec2_sg" {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
+        cidr_blocks = [var.vpc_cidr]
     }
 
     egress {
@@ -76,14 +70,14 @@ resource "aws_lb" "app_lb" {
     internal = false
     load_balancer_type = "application"
     security_groups = [aws_security_group.alb_sg.id]
-    subnets = data.aws_subnets.default.ids
+    subnets = module.vpc.public_subnets
 }
 
 resource "aws_lb_target_group" "app_tg" {
     name = "${var.project_name}-tg"
     port = 3000
     protocol = "HTTP"
-    vpc_id = data.aws_vpc.default.id
+    vpc_id = module.vpc.vpc_id
   
     health_check {
       path = "/"
@@ -98,7 +92,7 @@ resource "aws_lb_listener" "front_end" {
     load_balancer_arn = aws_lb.app_lb.arn
     port = "80"
     protocol = "HTTP"
-
+ 
     default_action {
         type = "forward"
         target_group_arn = aws_lb_target_group.app_tg.arn
@@ -121,7 +115,7 @@ resource "aws_launch_template" "app_lt" {
     instance_type = var.instance_type
 
     network_interfaces {
-      associate_public_ip_address = true
+      associate_public_ip_address = false 
       security_groups = [aws_security_group.ec2_sg.id]
     }
 
@@ -152,14 +146,14 @@ resource "aws_launch_template" "app_lt" {
 
 resource "aws_autoscaling_group" "app_asg" {
     name = "${var.project_name}-asg"
-    vpc_zone_identifier = data.aws_subnets.default.ids
+    vpc_zone_identifier = module.vpc.private_subnets
     target_group_arns = [aws_lb_target_group.app_tg.arn]
     health_check_type = "ELB"
     health_check_grace_period = 300
 
-    min_size = 1
-    max_size = 1
-    desired_capacity = 1
+    min_size = 2
+    max_size = 4
+    desired_capacity = 2
 
     launch_template {
       id = aws_launch_template.app_lt.id
