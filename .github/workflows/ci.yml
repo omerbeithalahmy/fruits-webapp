@@ -24,6 +24,9 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     
+    - name: Validate Docker Compose Config (Linting)
+      run: docker compose config --quiet
+    
     - name: Build and Push Docker Compose Services
       run: |
         export TAG=${GITHUB_SHA::7}
