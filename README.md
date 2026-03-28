@@ -73,18 +73,6 @@ We have provided automation scripts to make cloud provisioning completely seamle
 3. **Access the Application**:
    Once applied, Terraform will output the `alb_dns_name`. Navigate to this URL in your browser to view the live application.
 
-### Teardown
-To destroy the infrastructure and avoid ongoing AWS charges, **you must execute the teardown in this exact order**:
-
-1. **Destroy the Main Infrastructure** (EC2, ALB, VPC):
-```bash
-./scripts/destroy_infra.sh
-```
-
-2. **Destroy the Backend** (S3 State Bucket and DynamoDB Table):
-*Do not do this until the main infrastructure is destroyed, otherwise Terraform loses track of the resources!*
-```bash
-./scripts/destroy_backend.sh
 ```
 
 ## 🛠️ Technology Stack
